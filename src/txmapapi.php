@@ -59,15 +59,6 @@ class TxMapApi
      */
     public static function getPlaceByKeyword($param = [])
     {
-        if (!isset($param['region_fix'])) {
-            $param['region_fix'] = 1;
-        }
-        if (!isset($param['policy'])) {
-            $param['policy'] = 0;
-        }
-        if (!isset($param['region'])) {
-            $param['region'] = '常州';
-        }
         $data = self::apiGet(TX_MAP_API_KEYWORD, $param);
         if ($data) {
             try {
@@ -118,32 +109,12 @@ class TxMapApi
      */
     public static function calcDistance($param = [], $flag = false)
     {
-        if ($flag) {//此处非公用
-            $p = [];
-            foreach ($param as $key => $val) {
-                $p[] = $key . '=' . $val;
-            }
-            if (empty($p)) {
-                return [];
-            }
-            $query = implode('&', $p);
-            $cache_key = 'TxDistance_' . md5($query . '_TxDistance');
-            $data = Cache::get($cache_key);
-        } else {
-            $data = [];
+        $res = self::apiGet(TX_MAP_API_DISTANCE, $param);
+        if ($res) {
+            return $res['result']['elements'];
+        }else{
+            return [];
         }
-        if (!$data) {
-            $res = self::apiGet(TX_MAP_API_DISTANCE, $param);
-            $data = [];
-            if ($res) {
-                $data['distance'] = $res['result']['elements'][0]['distance']; //距离
-                $data['duration'] = $res['result']['elements'][0]['duration']; //耗时
-            }
-            if ($flag) {//此处非公用
-                Cache::set($cache_key, $data, 18144000); //一月
-            }
-        }
-        return $data;
     }
 
     /**
